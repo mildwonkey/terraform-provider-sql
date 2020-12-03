@@ -31,9 +31,9 @@ func New(version string) func() tfprotov5.ProviderServer {
 }
 
 type provider struct {
-	*sql.DB
+	DB *sql.DB `argmapper:",typeOnly"`
 
-	driver string
+	Driver string
 }
 
 var _ server.Provider = (*provider)(nil)

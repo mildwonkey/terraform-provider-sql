@@ -6,19 +6,25 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tftypes"
+
+	"github.com/paultyng/terraform-provider-sql/internal/server"
 )
 
 type dataQuery struct {
 	db dbQueryer
+	p  *provider
 }
 
-func newDataQuery(db dbQueryer) (*dataQuery, error) {
+var _ server.DataSource = (*dataQuery)(nil)
+
+func newDataQuery(db dbQueryer, p *provider) (*dataQuery, error) {
 	if db == nil {
 		return nil, fmt.Errorf("a database is required")
 	}
 
 	return &dataQuery{
 		db: db,
+		p:  p,
 	}, nil
 }
 
@@ -96,7 +102,7 @@ func (d *dataQuery) Read(ctx context.Context, config map[string]tftypes.Value) (
 	var rowType tftypes.Type
 	rowSet := []tftypes.Value{}
 	for rows.Next() {
-		row, ty, err := d.db.ValuesForRow(rows)
+		row, ty, err := d.p.ValuesForRow(rows)
 		if err != nil {
 			return nil, []*tfprotov5.Diagnostic{
 				{

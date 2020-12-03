@@ -16,6 +16,9 @@ type resourceMigrate struct {
 	resourceMigrateCommon
 }
 
+var _ server.Resource = (*resourceMigrate)(nil)
+var _ server.ResourceUpdater = (*resourceMigrate)(nil)
+
 func newResourceMigrate(db dbExecer) (*resourceMigrate, error) {
 	return &resourceMigrate{
 		resourceMigrateCommon: resourceMigrateCommon{

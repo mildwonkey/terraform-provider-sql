@@ -23,3 +23,4 @@ require (
 )
 
 // replace github.com/hashicorp/terraform-plugin-go => ../../hashicorp/terraform-plugin-go
+replace github.com/hashicorp/go-argmapper => ../../hashicorp/go-argmapper

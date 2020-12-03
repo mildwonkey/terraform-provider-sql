@@ -121,6 +121,7 @@ func (s *Server) dataSource(typeName string) (DataSource, error) {
 		argmapper.Named("typeName", typeName),
 
 		argmapper.Typed(s.p),
+		argmapper.FromStruct(s.p),
 
 		argmapper.ConverterFunc(conv),
 	)
@@ -176,6 +177,7 @@ func (s *Server) resource(typeName string) (Resource, error) {
 		argmapper.Named("typeName", typeName),
 
 		argmapper.Typed(s.p),
+		argmapper.FromStruct(s.p),
 
 		argmapper.ConverterFunc(conv),
 	)

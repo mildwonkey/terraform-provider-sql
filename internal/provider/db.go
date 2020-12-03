@@ -21,7 +21,6 @@ import (
 
 type dbQueryer interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	ValuesForRow(rows *sql.Rows) (map[string]tftypes.Value, map[string]tftypes.Type, error)
 }
 
 type dbExecer interface {
