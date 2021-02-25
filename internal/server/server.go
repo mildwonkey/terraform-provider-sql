@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/go-argmapper"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
 )
 
 var (
@@ -171,11 +171,11 @@ func (s *Server) resource(typeName string) (Resource, error) {
 	return r, nil
 }
 
-func (s *Server) GetProviderSchema(ctx context.Context, req *tfprotov5.GetProviderSchemaRequest) (*tfprotov5.GetProviderSchemaResponse, error) {
-	resp := &tfprotov5.GetProviderSchemaResponse{
+func (s *Server) GetProviderSchema(ctx context.Context, req *tfprotov6.GetProviderSchemaRequest) (*tfprotov6.GetProviderSchemaResponse, error) {
+	resp := &tfprotov6.GetProviderSchemaResponse{
 		Provider:          s.p.Schema(ctx),
-		DataSourceSchemas: map[string]*tfprotov5.Schema{},
-		ResourceSchemas:   map[string]*tfprotov5.Schema{},
+		DataSourceSchemas: map[string]*tfprotov6.Schema{},
+		ResourceSchemas:   map[string]*tfprotov6.Schema{},
 	}
 
 	for typeName := range s.dsf {
@@ -197,7 +197,7 @@ func (s *Server) GetProviderSchema(ctx context.Context, req *tfprotov5.GetProvid
 	return resp, nil
 }
 
-func (s *Server) PrepareProviderConfig(ctx context.Context, req *tfprotov5.PrepareProviderConfigRequest) (*tfprotov5.PrepareProviderConfigResponse, error) {
+func (s *Server) ValidateProviderConfig(ctx context.Context, req *tfprotov6.ValidateProviderConfigRequest) (*tfprotov6.ValidateProviderConfigResponse, error) {
 	schemaObjectType := schemaAsObject(s.p.Schema(ctx))
 
 	_, config, err := unmarshalDynamicValueObject(req.Config, schemaObjectType)
@@ -210,20 +210,20 @@ func (s *Server) PrepareProviderConfig(ctx context.Context, req *tfprotov5.Prepa
 		return nil, err
 	}
 	if diagsHaveError(diags) {
-		return &tfprotov5.PrepareProviderConfigResponse{
+		return &tfprotov6.ValidateProviderConfigResponse{
 			Diagnostics: diags,
 		}, nil
 	}
 
 	// TODO: defaulting?
 
-	return &tfprotov5.PrepareProviderConfigResponse{
+	return &tfprotov6.ValidateProviderConfigResponse{
 		Diagnostics:    diags,
 		PreparedConfig: req.Config,
 	}, nil
 }
 
-func (s *Server) ConfigureProvider(ctx context.Context, req *tfprotov5.ConfigureProviderRequest) (*tfprotov5.ConfigureProviderResponse, error) {
+func (s *Server) ConfigureProvider(ctx context.Context, req *tfprotov6.ConfigureProviderRequest) (*tfprotov6.ConfigureProviderResponse, error) {
 	schemaObjectType := schemaAsObject(s.p.Schema(ctx))
 
 	_, config, err := unmarshalDynamicValueObject(req.Config, schemaObjectType)
@@ -236,7 +236,7 @@ func (s *Server) ConfigureProvider(ctx context.Context, req *tfprotov5.Configure
 		return nil, err
 	}
 	if diagsHaveError(diags) {
-		return &tfprotov5.ConfigureProviderResponse{
+		return &tfprotov6.ConfigureProviderResponse{
 			Diagnostics: diags,
 		}, nil
 	}
@@ -246,23 +246,23 @@ func (s *Server) ConfigureProvider(ctx context.Context, req *tfprotov5.Configure
 		return nil, err
 	}
 	if diagsHaveError(diags) {
-		return &tfprotov5.ConfigureProviderResponse{
+		return &tfprotov6.ConfigureProviderResponse{
 			Diagnostics: diags,
 		}, nil
 	}
-	return &tfprotov5.ConfigureProviderResponse{
+	return &tfprotov6.ConfigureProviderResponse{
 		Diagnostics: diags,
 	}, nil
 }
 
-func (s *Server) StopProvider(ctx context.Context, req *tfprotov5.StopProviderRequest) (*tfprotov5.StopProviderResponse, error) {
+func (s *Server) StopProvider(ctx context.Context, req *tfprotov6.StopProviderRequest) (*tfprotov6.StopProviderResponse, error) {
 	// TODO: close/reopen? db connection
 	panic("not implemented")
 }
 
 // ResourceServer methods
 
-func (s *Server) ValidateResourceTypeConfig(ctx context.Context, req *tfprotov5.ValidateResourceTypeConfigRequest) (*tfprotov5.ValidateResourceTypeConfigResponse, error) {
+func (s *Server) ValidateResourceConfig(ctx context.Context, req *tfprotov6.ValidateResourceConfigRequest) (*tfprotov6.ValidateResourceConfigResponse, error) {
 	r, err := s.resource(req.TypeName)
 	if err != nil {
 		return nil, err
@@ -272,19 +272,19 @@ func (s *Server) ValidateResourceTypeConfig(ctx context.Context, req *tfprotov5.
 
 	_, config, err := unmarshalDynamicValueObject(req.Config, schemaObjectType)
 	if err != nil {
-		return nil, fmt.Errorf("ValidateResourceTypeConfig - unmarshalDynamicValueObject(req.Config): %w", err)
+		return nil, fmt.Errorf("ValidateResourceConfig - unmarshalDynamicValueObject(req.Config): %w", err)
 	}
 
 	diags, err := r.Validate(ctx, config)
 	if err != nil {
 		return nil, err
 	}
-	return &tfprotov5.ValidateResourceTypeConfigResponse{
+	return &tfprotov6.ValidateResourceConfigResponse{
 		Diagnostics: diags,
 	}, nil
 }
 
-func (s *Server) UpgradeResourceState(ctx context.Context, req *tfprotov5.UpgradeResourceStateRequest) (*tfprotov5.UpgradeResourceStateResponse, error) {
+func (s *Server) UpgradeResourceState(ctx context.Context, req *tfprotov6.UpgradeResourceStateRequest) (*tfprotov6.UpgradeResourceStateResponse, error) {
 	r, err := s.resource(req.TypeName)
 	if err != nil {
 		return nil, err
@@ -297,17 +297,17 @@ func (s *Server) UpgradeResourceState(ctx context.Context, req *tfprotov5.Upgrad
 		return nil, err
 	}
 
-	rawStateValue, err := tfprotov5.NewDynamicValue(schemaObjectType, rawStateObject)
+	rawStateValue, err := tfprotov6.NewDynamicValue(schemaObjectType, rawStateObject)
 	if err != nil {
 		return nil, err
 	}
 
-	return &tfprotov5.UpgradeResourceStateResponse{
+	return &tfprotov6.UpgradeResourceStateResponse{
 		UpgradedState: &rawStateValue,
 	}, nil
 }
 
-func (s *Server) ReadResource(ctx context.Context, req *tfprotov5.ReadResourceRequest) (*tfprotov5.ReadResourceResponse, error) {
+func (s *Server) ReadResource(ctx context.Context, req *tfprotov6.ReadResourceRequest) (*tfprotov6.ReadResourceResponse, error) {
 	r, err := s.resource(req.TypeName)
 	if err != nil {
 		return nil, err
@@ -326,23 +326,23 @@ func (s *Server) ReadResource(ctx context.Context, req *tfprotov5.ReadResourceRe
 	}
 
 	if diagsHaveError(diags) {
-		return &tfprotov5.ReadResourceResponse{
+		return &tfprotov6.ReadResourceResponse{
 			Diagnostics: diags,
 		}, nil
 	}
 
-	newStateValue, err := tfprotov5.NewDynamicValue(schemaObjectType, tftypes.NewValue(schemaObjectType, newState))
+	newStateValue, err := tfprotov6.NewDynamicValue(schemaObjectType, tftypes.NewValue(schemaObjectType, newState))
 	if err != nil {
 		return nil, fmt.Errorf("ApplyResourceChange - error NewDynamicValue: %w", err)
 	}
 
-	return &tfprotov5.ReadResourceResponse{
+	return &tfprotov6.ReadResourceResponse{
 		NewState:    &newStateValue,
 		Diagnostics: diags,
 	}, nil
 }
 
-func (s *Server) PlanResourceChange(ctx context.Context, req *tfprotov5.PlanResourceChangeRequest) (*tfprotov5.PlanResourceChangeResponse, error) {
+func (s *Server) PlanResourceChange(ctx context.Context, req *tfprotov6.PlanResourceChangeRequest) (*tfprotov6.PlanResourceChangeResponse, error) {
 	r, err := s.resource(req.TypeName)
 	if err != nil {
 		return nil, err
@@ -357,7 +357,7 @@ func (s *Server) PlanResourceChange(ctx context.Context, req *tfprotov5.PlanReso
 
 	if proposedObject.IsNull() {
 		// short circuit, this is a destroy
-		return &tfprotov5.PlanResourceChangeResponse{
+		return &tfprotov6.PlanResourceChangeResponse{
 			PlannedState: req.ProposedNewState,
 		}, nil
 	}
@@ -373,7 +373,7 @@ func (s *Server) PlanResourceChange(ctx context.Context, req *tfprotov5.PlanReso
 	}
 
 	if diagsHaveError(diags) {
-		return &tfprotov5.PlanResourceChangeResponse{
+		return &tfprotov6.PlanResourceChangeResponse{
 			Diagnostics: diags,
 		}, nil
 	}
@@ -385,7 +385,7 @@ func (s *Server) PlanResourceChange(ctx context.Context, req *tfprotov5.PlanReso
 
 	var planned map[string]tftypes.Value
 	if priorObject.IsNull() {
-		var createDiags []*tfprotov5.Diagnostic
+		var createDiags []*tfprotov6.Diagnostic
 		planned, createDiags, err = r.PlanCreate(ctx, proposed, config)
 		if err != nil {
 			return nil, err
@@ -396,7 +396,7 @@ func (s *Server) PlanResourceChange(ctx context.Context, req *tfprotov5.PlanReso
 		if !ok {
 			return nil, fmt.Errorf("attempting to update resource with no Update implementation")
 		}
-		var updateDiags []*tfprotov5.Diagnostic
+		var updateDiags []*tfprotov6.Diagnostic
 		planned, updateDiags, err = updater.PlanUpdate(ctx, proposed, config, prior)
 		if err != nil {
 			return nil, err
@@ -405,23 +405,23 @@ func (s *Server) PlanResourceChange(ctx context.Context, req *tfprotov5.PlanReso
 	}
 
 	if diagsHaveError(diags) {
-		return &tfprotov5.PlanResourceChangeResponse{
+		return &tfprotov6.PlanResourceChangeResponse{
 			Diagnostics: diags,
 		}, nil
 	}
 
-	plannedValue, err := tfprotov5.NewDynamicValue(schemaObjectType, tftypes.NewValue(schemaObjectType, planned))
+	plannedValue, err := tfprotov6.NewDynamicValue(schemaObjectType, tftypes.NewValue(schemaObjectType, planned))
 	if err != nil {
 		return nil, fmt.Errorf("ApplyResourceChange - error NewDynamicValue: %w", err)
 	}
 
-	return &tfprotov5.PlanResourceChangeResponse{
+	return &tfprotov6.PlanResourceChangeResponse{
 		PlannedState: &plannedValue,
 		Diagnostics:  diags,
 	}, nil
 }
 
-func (s *Server) ApplyResourceChange(ctx context.Context, req *tfprotov5.ApplyResourceChangeRequest) (*tfprotov5.ApplyResourceChangeResponse, error) {
+func (s *Server) ApplyResourceChange(ctx context.Context, req *tfprotov6.ApplyResourceChangeRequest) (*tfprotov6.ApplyResourceChangeResponse, error) {
 	r, err := s.resource(req.TypeName)
 	if err != nil {
 		return nil, err
@@ -448,12 +448,12 @@ func (s *Server) ApplyResourceChange(ctx context.Context, req *tfprotov5.ApplyRe
 		}
 
 		if diagsHaveError(diags) {
-			return &tfprotov5.ApplyResourceChangeResponse{
+			return &tfprotov6.ApplyResourceChangeResponse{
 				Diagnostics: diags,
 			}, nil
 		}
 
-		return &tfprotov5.ApplyResourceChangeResponse{
+		return &tfprotov6.ApplyResourceChangeResponse{
 			Diagnostics: diags,
 			NewState:    req.PlannedState,
 		}, nil
@@ -470,14 +470,14 @@ func (s *Server) ApplyResourceChange(ctx context.Context, req *tfprotov5.ApplyRe
 	}
 
 	if diagsHaveError(diags) {
-		return &tfprotov5.ApplyResourceChangeResponse{
+		return &tfprotov6.ApplyResourceChangeResponse{
 			Diagnostics: diags,
 		}, nil
 	}
 
 	var state map[string]tftypes.Value
 	if priorObject.IsNull() {
-		var createDiags []*tfprotov5.Diagnostic
+		var createDiags []*tfprotov6.Diagnostic
 		state, createDiags, err = r.Create(ctx, planned, config, prior)
 		if err != nil {
 			return nil, err
@@ -488,7 +488,7 @@ func (s *Server) ApplyResourceChange(ctx context.Context, req *tfprotov5.ApplyRe
 		if !ok {
 			return nil, fmt.Errorf("attempting to update resource with no Update implementation")
 		}
-		var updateDiags []*tfprotov5.Diagnostic
+		var updateDiags []*tfprotov6.Diagnostic
 		state, updateDiags, err = updater.Update(ctx, planned, config, prior)
 		if err != nil {
 			return nil, err
@@ -497,29 +497,29 @@ func (s *Server) ApplyResourceChange(ctx context.Context, req *tfprotov5.ApplyRe
 	}
 
 	if diagsHaveError(diags) {
-		return &tfprotov5.ApplyResourceChangeResponse{
+		return &tfprotov6.ApplyResourceChangeResponse{
 			Diagnostics: diags,
 		}, nil
 	}
 
-	stateValue, err := tfprotov5.NewDynamicValue(schemaObjectType, tftypes.NewValue(schemaObjectType, state))
+	stateValue, err := tfprotov6.NewDynamicValue(schemaObjectType, tftypes.NewValue(schemaObjectType, state))
 	if err != nil {
 		return nil, fmt.Errorf("ApplyResourceChange - error NewDynamicValue: %w", err)
 	}
 
-	return &tfprotov5.ApplyResourceChangeResponse{
+	return &tfprotov6.ApplyResourceChangeResponse{
 		NewState:    &stateValue,
 		Diagnostics: diags,
 	}, nil
 }
 
-func (s *Server) ImportResourceState(ctx context.Context, req *tfprotov5.ImportResourceStateRequest) (*tfprotov5.ImportResourceStateResponse, error) {
+func (s *Server) ImportResourceState(ctx context.Context, req *tfprotov6.ImportResourceStateRequest) (*tfprotov6.ImportResourceStateResponse, error) {
 	panic("not implemented")
 }
 
 // DataSourceServer methods
 
-func (s *Server) ValidateDataSourceConfig(ctx context.Context, req *tfprotov5.ValidateDataSourceConfigRequest) (*tfprotov5.ValidateDataSourceConfigResponse, error) {
+func (s *Server) ValidateDataResourceConfig(ctx context.Context, req *tfprotov6.ValidateDataResourceConfigRequest) (*tfprotov6.ValidateDataResourceConfigResponse, error) {
 	ds, err := s.dataSource(req.TypeName)
 	if err != nil {
 		return nil, err
@@ -529,7 +529,7 @@ func (s *Server) ValidateDataSourceConfig(ctx context.Context, req *tfprotov5.Va
 
 	_, config, err := unmarshalDynamicValueObject(req.Config, schemaObjectType)
 	if err != nil {
-		return nil, fmt.Errorf("ValidateDataSourceConfig - unmarshalDynamicValueObject(req.Config): %w", err)
+		return nil, fmt.Errorf("ValidateDataResourceConfig - unmarshalDynamicValueObject(req.Config): %w", err)
 	}
 
 	diags, err := ds.Validate(ctx, config)
@@ -537,12 +537,12 @@ func (s *Server) ValidateDataSourceConfig(ctx context.Context, req *tfprotov5.Va
 		return nil, err
 	}
 
-	return &tfprotov5.ValidateDataSourceConfigResponse{
+	return &tfprotov6.ValidateDataResourceConfigResponse{
 		Diagnostics: diags,
 	}, nil
 }
 
-func (s *Server) ReadDataSource(ctx context.Context, req *tfprotov5.ReadDataSourceRequest) (*tfprotov5.ReadDataSourceResponse, error) {
+func (s *Server) ReadDataSource(ctx context.Context, req *tfprotov6.ReadDataSourceRequest) (*tfprotov6.ReadDataSourceResponse, error) {
 	ds, err := s.dataSource(req.TypeName)
 	if err != nil {
 		return nil, err
@@ -560,7 +560,7 @@ func (s *Server) ReadDataSource(ctx context.Context, req *tfprotov5.ReadDataSour
 		return nil, fmt.Errorf("ReadDataSource - error ds.Validate: %w", err)
 	}
 	if diagsHaveError(diags) {
-		return &tfprotov5.ReadDataSourceResponse{
+		return &tfprotov6.ReadDataSourceResponse{
 			Diagnostics: diags,
 		}, nil
 	}
@@ -569,18 +569,18 @@ func (s *Server) ReadDataSource(ctx context.Context, req *tfprotov5.ReadDataSour
 		return nil, fmt.Errorf("ReadDataSource - error ds.Read: %w", err)
 	}
 	if diagsHaveError(diags) {
-		return &tfprotov5.ReadDataSourceResponse{
+		return &tfprotov6.ReadDataSourceResponse{
 			Diagnostics: diags,
 		}, nil
 	}
 
 	// TODO: should NewDynamicValue return a pointer?
-	stateValue, err := tfprotov5.NewDynamicValue(schemaObjectType, tftypes.NewValue(schemaObjectType, state))
+	stateValue, err := tfprotov6.NewDynamicValue(schemaObjectType, tftypes.NewValue(schemaObjectType, state))
 	if err != nil {
 		return nil, fmt.Errorf("ReadDataSource - error NewDynamicValue: %w", err)
 	}
 
-	return &tfprotov5.ReadDataSourceResponse{
+	return &tfprotov6.ReadDataSourceResponse{
 		State:       &stateValue,
 		Diagnostics: diags,
 	}, nil

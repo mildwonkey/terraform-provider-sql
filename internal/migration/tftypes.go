@@ -1,6 +1,6 @@
 package migration
 
-import "github.com/hashicorp/terraform-plugin-go/tfprotov5/tftypes"
+import "github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
 
 var (
 	ListTFType = tftypes.List{

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-plugin"
-	server "github.com/hashicorp/terraform-plugin-go/tfprotov5/server"
+	server "github.com/hashicorp/terraform-plugin-go/tfprotov6/server"
 
 	"github.com/paultyng/terraform-provider-sql/internal/provider"
 )

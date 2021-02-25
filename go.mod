@@ -18,4 +18,6 @@ require (
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
 
-// replace github.com/hashicorp/terraform-plugin-go => ../../hashicorp/terraform-plugin-go
+replace github.com/hashicorp/terraform-plugin-go => /Users/kristin/go/src/github.com/mildwonkey/terraform-plugin-go
+
+replace github.com/hashicorp/terraform-plugin-sdk/v2 => /Users/kristin/go/src/github.com/mildwonkey/terraform-plugin-sdk

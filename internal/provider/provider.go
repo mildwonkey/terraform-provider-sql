@@ -7,14 +7,14 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
 
 	"github.com/paultyng/terraform-provider-sql/internal/server"
 )
 
-func New(version string) func() tfprotov5.ProviderServer {
-	return func() tfprotov5.ProviderServer {
+func New(version string) func() tfprotov6.ProviderServer {
+	return func() tfprotov6.ProviderServer {
 		s := server.MustNew(func() server.Provider {
 			return &provider{}
 		})
@@ -36,10 +36,10 @@ type provider struct {
 
 var _ server.Provider = (*provider)(nil)
 
-func (p *provider) Schema(context.Context) *tfprotov5.Schema {
-	return &tfprotov5.Schema{
-		Block: &tfprotov5.SchemaBlock{
-			Attributes: []*tfprotov5.SchemaAttribute{
+func (p *provider) Schema(context.Context) *tfprotov6.Schema {
+	return &tfprotov6.Schema{
+		Block: &tfprotov6.SchemaBlock{
+			Attributes: []*tfprotov6.SchemaAttribute{
 				{
 					Name:     "url",
 					Optional: true,
@@ -47,7 +47,7 @@ func (p *provider) Schema(context.Context) *tfprotov5.Schema {
 					Description: "Database connection strings are specified via URLs. The URL format is driver dependent " +
 						"but generally has the form: `dbdriver://username:password@host:port/dbname?param1=true&param2=false`. " +
 						"You can optionally set the `SQL_URL` environment variable instead.",
-					DescriptionKind: tfprotov5.StringKindMarkdown,
+					DescriptionKind: tfprotov6.StringKindMarkdown,
 					Type:            tftypes.String,
 				},
 				{
@@ -55,7 +55,7 @@ func (p *provider) Schema(context.Context) *tfprotov5.Schema {
 					Optional: true,
 					Description: "Sets the maximum number of open connections to the database. Default is `0` (unlimited). " +
 						"See Go's documentation on [DB.SetMaxOpenConns](https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns).",
-					DescriptionKind: tfprotov5.StringKindMarkdown,
+					DescriptionKind: tfprotov6.StringKindMarkdown,
 					Type:            tftypes.Number,
 				},
 				{
@@ -63,7 +63,7 @@ func (p *provider) Schema(context.Context) *tfprotov5.Schema {
 					Optional: true,
 					Description: "Sets the maximum number of connections in the idle connection pool. Default is `2`. " +
 						"See Go's documentation on [DB.SetMaxIdleConns](https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns).",
-					DescriptionKind: tfprotov5.StringKindMarkdown,
+					DescriptionKind: tfprotov6.StringKindMarkdown,
 					Type:            tftypes.Number,
 				},
 			},
@@ -71,11 +71,11 @@ func (p *provider) Schema(context.Context) *tfprotov5.Schema {
 	}
 }
 
-func (p *provider) Validate(ctx context.Context, config map[string]tftypes.Value) ([]*tfprotov5.Diagnostic, error) {
+func (p *provider) Validate(ctx context.Context, config map[string]tftypes.Value) ([]*tfprotov6.Diagnostic, error) {
 	return nil, nil
 }
 
-func (p *provider) Configure(ctx context.Context, config map[string]tftypes.Value) ([]*tfprotov5.Diagnostic, error) {
+func (p *provider) Configure(ctx context.Context, config map[string]tftypes.Value) ([]*tfprotov6.Diagnostic, error) {
 	if p.db != nil {
 		// if reconfiguring, close existing connection
 		_ = p.db.Close()
@@ -99,9 +99,9 @@ func (p *provider) Configure(ctx context.Context, config map[string]tftypes.Valu
 	}
 
 	if url == "" {
-		return []*tfprotov5.Diagnostic{
+		return []*tfprotov6.Diagnostic{
 			{
-				Severity: tfprotov5.DiagnosticSeverityError,
+				Severity: tfprotov6.DiagnosticSeverityError,
 				Attribute: &tftypes.AttributePath{Steps: []tftypes.AttributePathStep{
 					tftypes.AttributeName("url"),
 				}},
