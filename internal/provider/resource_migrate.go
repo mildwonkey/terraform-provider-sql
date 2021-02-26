@@ -32,11 +32,11 @@ var (
 func (r *resourceMigrate) Schema(ctx context.Context) *tfprotov6.Schema {
 	return &tfprotov6.Schema{
 		Block: &tfprotov6.SchemaBlock{
-			BlockTypes: []*tfprotov6.SchemaNestedBlock{
+			Attributes: []*tfprotov6.SchemaAttribute{
 				{
-					TypeName: "migration",
-					Nesting:  tfprotov6.SchemaNestedBlockNestingModeList,
-					Block: &tfprotov6.SchemaBlock{
+					Name: "migration",
+					NestedType: &tfprotov6.SchemaNestedType{
+						Nesting: tfprotov6.SchemaNestedBlockNestingModeList,
 						Attributes: []*tfprotov6.SchemaAttribute{
 							{
 								Name:            "id",
@@ -62,8 +62,6 @@ func (r *resourceMigrate) Schema(ctx context.Context) *tfprotov6.Schema {
 						},
 					},
 				},
-			},
-			Attributes: []*tfprotov6.SchemaAttribute{
 				completeMigrationsAttribute(),
 				deprecatedIDAttribute(),
 			},

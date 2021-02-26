@@ -31,7 +31,7 @@ provider "sql" {
 }
 
 resource "sql_migrate" "db" {
-	migration {
+	migration = [{
 		id = "create table"
 
 		up = <<SQL
@@ -45,7 +45,7 @@ SQL
 		down = <<SQL
 DROP TABLE inline_migrate_test;
 SQL
-	}
+	}] 
 }
 
 data "sql_query" "users" {
@@ -71,7 +71,7 @@ provider "sql" {
 }
 
 resource "sql_migrate" "db" {
-	migration {
+	migration = [{
 		id = "create table"
 
 		up = <<SQL
@@ -85,13 +85,13 @@ SQL
 		down = <<SQL
 DROP TABLE inline_migrate_test;
 SQL
-	}
+	},
 
-	migration {
+	{
 		id   = "insert row"
 		up   = "INSERT INTO inline_migrate_test VALUES (1, 'Paul Tyng', 'paul@example.com');"
 		down = "DELETE FROM inline_migrate_test WHERE user_id = 1;"
-	}
+	}]
 }
 
 data "sql_query" "users" {

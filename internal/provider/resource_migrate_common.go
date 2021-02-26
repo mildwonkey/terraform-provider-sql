@@ -16,12 +16,23 @@ func completeMigrationsAttribute() *tfprotov6.SchemaAttribute {
 		Description: "The completed migrations that have been run against your database. This list is used as " +
 			"storage to migrate down or as a trigger for downstream dependencies.",
 		DescriptionKind: tfprotov6.StringKindMarkdown,
-		Type: tftypes.List{
-			ElementType: tftypes.Object{
-				AttributeTypes: map[string]tftypes.Type{
-					"id":   tftypes.String,
-					"up":   tftypes.String,
-					"down": tftypes.String,
+		NestedType: &tfprotov6.SchemaNestedType{
+			Nesting: tfprotov6.SchemaNestedBlockNestingModeList,
+			Attributes: []*tfprotov6.SchemaAttribute{
+				{
+					Name:     "id",
+					Computed: true,
+					Type:     tftypes.String,
+				},
+				{
+					Name:     "up",
+					Computed: true,
+					Type:     tftypes.String,
+				},
+				{
+					Name:     "down",
+					Computed: true,
+					Type:     tftypes.String,
 				},
 			},
 		},
