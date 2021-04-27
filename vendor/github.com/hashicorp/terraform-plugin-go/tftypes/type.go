@@ -35,6 +35,9 @@ type Type interface {
 	// supportedGoTypes returns a list of string representations of the Go
 	// types that the Type supports for its values.
 	supportedGoTypes() []string
+
+	// equals allows for exact or inexact type comparisons.
+	equals(Type, bool) bool
 }
 
 // TypeFromElements returns the common type that the passed elements all have
@@ -55,6 +58,75 @@ func TypeFromElements(elements []Value) (Type, error) {
 		return DynamicPseudoType, nil
 	}
 	return typ, nil
+}
+
+func useTypeAs(candidate, usedAs Type, path *AttributePath) error {
+	switch {
+	case usedAs.Is(DynamicPseudoType):
+		return nil
+	case usedAs.Is(String), usedAs.Is(Bool), usedAs.Is(Number):
+		if candidate.Is(usedAs) {
+			return nil
+		}
+		return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+	case usedAs.Is(List{}):
+		if !candidate.Is(List{}) {
+			return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+		}
+		return useTypeAs(candidate.(List).ElementType, usedAs.(List).ElementType, path.WithElementKeyInt(0))
+	case usedAs.Is(Set{}):
+		if !candidate.Is(Set{}) {
+			return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+		}
+		return useTypeAs(candidate.(Set).ElementType, usedAs.(Set).ElementType, path.WithElementKeyValue(NewValue(DynamicPseudoType, UnknownValue)))
+	case usedAs.Is(Map{}):
+		if !candidate.Is(Map{}) {
+			return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+		}
+		return useTypeAs(candidate.(Map).AttributeType, usedAs.(Map).AttributeType, path.WithElementKeyString(""))
+	case usedAs.Is(Tuple{}):
+		if !candidate.Is(Tuple{}) {
+			return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+		}
+		cElems := candidate.(Tuple).ElementTypes
+		uElems := usedAs.(Tuple).ElementTypes
+		if len(cElems) != len(uElems) {
+			return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+		}
+		for pos, cElem := range cElems {
+			uElem := uElems[pos]
+			err := useTypeAs(cElem, uElem, path.WithElementKeyInt(int64(pos)))
+			if err != nil {
+				return err
+			}
+		}
+	case usedAs.Is(Object{}):
+		if !candidate.Is(Object{}) {
+			return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+		}
+		if len(candidate.(Object).OptionalAttributes) != len(usedAs.(Object).OptionalAttributes) {
+			return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+		}
+		for attr := range usedAs.(Object).OptionalAttributes {
+			if !candidate.(Object).attrIsOptional(attr) {
+				return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+			}
+		}
+		if len(candidate.(Object).AttributeTypes) != len(usedAs.(Object).AttributeTypes) {
+			return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+		}
+		for attr, uAttr := range usedAs.(Object).AttributeTypes {
+			cAttr, ok := candidate.(Object).AttributeTypes[attr]
+			if !ok {
+				return path.NewErrorf("can't use %s as %s", candidate, usedAs)
+			}
+			err := useTypeAs(cAttr, uAttr, path.WithAttributeName(attr))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 type jsonType struct {
@@ -153,9 +225,21 @@ func (t *jsonType) UnmarshalJSON(buf []byte) error {
 			for k, v := range atys {
 				types[k] = v.t
 			}
-			t.t = Object{
-				AttributeTypes: types,
+			o := Object{
+				AttributeTypes:     types,
+				OptionalAttributes: map[string]struct{}{},
 			}
+			if dec.More() {
+				var optionals []string
+				err = dec.Decode(&optionals)
+				if err != nil {
+					return err
+				}
+				for _, attr := range optionals {
+					o.OptionalAttributes[attr] = struct{}{}
+				}
+			}
+			t.t = o
 		case "tuple":
 			var etys []jsonType
 			err = dec.Decode(&etys)

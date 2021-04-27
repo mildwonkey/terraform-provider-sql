@@ -11,13 +11,11 @@ require (
 	github.com/hashicorp/go-argmapper v0.0.0-20200721221215-04ae500ede3b
 	github.com/hashicorp/go-plugin v1.4.0
 	github.com/hashicorp/terraform-plugin-docs v0.3.1-0.20210107204619-bf524a84dc08
-	github.com/hashicorp/terraform-plugin-go v0.2.2-0.20210331165314-014db87cfffd
+	github.com/hashicorp/terraform-plugin-go v0.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.5.0
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/ory/dockertest/v3 v3.6.3
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
-
-replace github.com/hashicorp/terraform-plugin-go => /Users/kristin/go/src/github.com/mildwonkey/terraform-plugin-go
 
 replace github.com/hashicorp/terraform-plugin-sdk/v2 => /Users/kristin/go/src/github.com/mildwonkey/terraform-plugin-sdk
