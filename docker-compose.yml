@@ -1,0 +1,8 @@
+services:
+  db:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: tf
+    ports:
+      - 3306:3306
+

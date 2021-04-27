@@ -8,9 +8,9 @@ import (
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	"github.com/paultyng/terraform-provider-sql/internal/server"
+	"github.com/mildwonkey/terraform-provider-sql/internal/server"
 )
 
 func New(version string) func() tfprotov6.ProviderServer {
@@ -102,9 +102,8 @@ func (p *provider) Configure(ctx context.Context, config map[string]tftypes.Valu
 		return []*tfprotov6.Diagnostic{
 			{
 				Severity: tfprotov6.DiagnosticSeverityError,
-				Attribute: &tftypes.AttributePath{Steps: []tftypes.AttributePathStep{
-					tftypes.AttributeName("url"),
-				}},
+				Attribute: tftypes.NewAttributePathWithSteps(
+					[]tftypes.AttributePathStep{tftypes.AttributeName("url")}),
 				Summary: "A `url` is required to connect to your database.",
 			},
 		}, nil

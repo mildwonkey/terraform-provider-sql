@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/go-argmapper"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 var (

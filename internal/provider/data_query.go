@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 type dataQuery struct {
@@ -101,11 +101,9 @@ func (d *dataQuery) Read(ctx context.Context, config map[string]tftypes.Value) (
 			return nil, []*tfprotov6.Diagnostic{
 				{
 					Severity: tfprotov6.DiagnosticSeverityError,
-					Attribute: &tftypes.AttributePath{
-						Steps: []tftypes.AttributePathStep{
-							tftypes.AttributeName("result"),
-						},
-					},
+					Attribute: tftypes.NewAttributePathWithSteps(
+						[]tftypes.AttributePathStep{tftypes.AttributeName("result")},
+					),
 					Summary: fmt.Sprintf("unable to convert value from database: %s", err),
 				},
 			}, nil

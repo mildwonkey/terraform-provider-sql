@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	"github.com/paultyng/terraform-provider-sql/internal/migration"
+	"github.com/mildwonkey/terraform-provider-sql/internal/migration"
 )
 
 func completeMigrationsAttribute() *tfprotov6.SchemaAttribute {
@@ -16,8 +16,8 @@ func completeMigrationsAttribute() *tfprotov6.SchemaAttribute {
 		Description: "The completed migrations that have been run against your database. This list is used as " +
 			"storage to migrate down or as a trigger for downstream dependencies.",
 		DescriptionKind: tfprotov6.StringKindMarkdown,
-		NestedType: &tfprotov6.SchemaNestedType{
-			Nesting: tfprotov6.SchemaNestedBlockNestingModeList,
+		NestedType: &tfprotov6.SchemaObject{
+			Nesting: tfprotov6.SchemaObjectNestingModeList,
 			Attributes: []*tfprotov6.SchemaAttribute{
 				{
 					Name:     "id",

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 type Resource interface {

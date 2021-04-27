@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 // potential terraform-plugin-go convenience funcs
@@ -71,7 +71,7 @@ func nestedBlockAsObject(nestedBlock *tfprotov6.SchemaNestedBlock) tftypes.Type 
 	panic(fmt.Sprintf("nested block type of %s for %s not supported", nestedBlock.Nesting, nestedBlock.TypeName))
 }
 
-func nestedTypeAsObject(name string, nestedType *tfprotov6.SchemaNestedType) tftypes.Type {
+func nestedTypeAsObject(name string, nestedType *tfprotov6.SchemaObject) tftypes.Type {
 	o := tftypes.Object{
 		AttributeTypes: map[string]tftypes.Type{},
 	}
@@ -84,9 +84,9 @@ func nestedTypeAsObject(name string, nestedType *tfprotov6.SchemaNestedType) tft
 		}
 	}
 	switch nestedType.Nesting {
-	case tfprotov6.SchemaNestedBlockNestingModeSingle:
+	case tfprotov6.SchemaObjectNestingModeSingle:
 		return o
-	case tfprotov6.SchemaNestedBlockNestingModeList:
+	case tfprotov6.SchemaObjectNestingModeList:
 		return tftypes.List{
 			ElementType: o,
 		}

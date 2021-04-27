@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tftypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	"github.com/paultyng/terraform-provider-sql/internal/migration"
-	"github.com/paultyng/terraform-provider-sql/internal/server"
+	"github.com/mildwonkey/terraform-provider-sql/internal/migration"
+	"github.com/mildwonkey/terraform-provider-sql/internal/server"
 )
 
 type resourceMigrate struct {
@@ -34,9 +34,10 @@ func (r *resourceMigrate) Schema(ctx context.Context) *tfprotov6.Schema {
 		Block: &tfprotov6.SchemaBlock{
 			Attributes: []*tfprotov6.SchemaAttribute{
 				{
-					Name: "migration",
-					NestedType: &tfprotov6.SchemaNestedType{
-						Nesting: tfprotov6.SchemaNestedBlockNestingModeList,
+					Name:     "migration",
+					Required: true,
+					NestedType: &tfprotov6.SchemaObject{
+						Nesting: tfprotov6.SchemaObjectNestingModeList,
 						Attributes: []*tfprotov6.SchemaAttribute{
 							{
 								Name:            "id",
@@ -97,13 +98,13 @@ func (r *resourceMigrate) Validate(ctx context.Context, config map[string]tftype
 				{
 					Severity: tfprotov6.DiagnosticSeverityError,
 					Summary:  "ID cannot be empty.",
-					Attribute: &tftypes.AttributePath{
-						Steps: []tftypes.AttributePathStep{
+					Attribute: tftypes.NewAttributePathWithSteps(
+						[]tftypes.AttributePathStep{
 							tftypes.AttributeName("migration"),
 							tftypes.ElementKeyInt(i),
 							tftypes.AttributeName("id"),
 						},
-					},
+					),
 				},
 			}, nil
 		}
@@ -112,13 +113,13 @@ func (r *resourceMigrate) Validate(ctx context.Context, config map[string]tftype
 				{
 					Severity: tfprotov6.DiagnosticSeverityError,
 					Summary:  fmt.Sprintf("Duplicate ID value of %q.", m.ID),
-					Attribute: &tftypes.AttributePath{
-						Steps: []tftypes.AttributePathStep{
+					Attribute: tftypes.NewAttributePathWithSteps(
+						[]tftypes.AttributePathStep{
 							tftypes.AttributeName("migration"),
 							tftypes.ElementKeyInt(i),
 							tftypes.AttributeName("id"),
 						},
-					},
+					),
 				},
 			}, nil
 		}
